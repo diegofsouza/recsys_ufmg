@@ -3,6 +3,8 @@ package br.ufmg.repository;
 import java.lang.reflect.Type;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import br.ufmg.domain.Game;
 import br.ufmg.repository.adapter.GamesAdapter;
 
@@ -14,6 +16,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 public class GameRepository {
+	private static final Logger log = Logger.getLogger(GameRepository.class);
 	public static final String STEAM_URL_BASE = "http://store.steampowered.com/";
 	public static final String STEAM_APP_URL_BASE = STEAM_URL_BASE + "app/";
 
@@ -29,7 +32,7 @@ public class GameRepository {
 			json = WebApi.getJSON(GAME_INTERFACE, GET_APP_LIST, INTERFACE_VERSION);
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.getMessage());
 		}
 		Gson gson = new GsonBuilder().registerTypeAdapter(List.class, new GamesAdapter()).create();
 		JsonObject jsonObject = gson.fromJson(json, JsonObject.class);

@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -16,6 +17,7 @@ import br.ufmg.domain.Review;
 
 public class GameParser {
 
+	private static final Logger log = Logger.getLogger(GameParser.class);
 	private static final String RELEASE_DATE_FORMAT = "d MMM, yyyy";
 	private static final String RELEASE_DATE_SELECTOR = "div.release_date span.date";
 	private static final String DLC_CATEGORY = "Downloadable Content";
@@ -37,7 +39,7 @@ public class GameParser {
 	public void parseGame(Document html) {
 		List<String> categories = this.getElementTexts(html, CATEGORIES_SELECTOR);
 		if (!this.isDownloadableContent(categories)) {
-			System.out.println("parsing game: " + this.game.toString());
+			log.info("parsing game: " + this.game.toString());
 			this.game.setCategories(categories);
 
 			List<String> tags = this.getElementTexts(html, TAGS_SELECTOR);
@@ -64,7 +66,7 @@ public class GameParser {
 			List<String> publishers = this.getElementTexts(gameDetailsElements, PUBLISHERS_SELECTOR);
 			this.game.setPublishers(publishers);
 		} else {
-			System.err.println("DLC: " + this.game.toString());
+			log.error("DLC: " + this.game.toString());
 			this.game = null;
 		}
 
@@ -92,7 +94,7 @@ public class GameParser {
 		try {
 			releaseDate = new SimpleDateFormat(RELEASE_DATE_FORMAT).parse(releaseDateStr);
 		} catch (ParseException e) {
-			e.printStackTrace();
+			log.error(e.getMessage());
 		}
 
 		return releaseDate;

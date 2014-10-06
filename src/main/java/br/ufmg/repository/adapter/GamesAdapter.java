@@ -5,6 +5,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -21,6 +22,7 @@ import com.google.gson.JsonParseException;
 
 public class GamesAdapter implements JsonDeserializer<List<Game>> {
 
+	private static final Logger log = Logger.getLogger(GamesAdapter.class);
 	private static final String APP_NAME_SELECTOR = "div.game_title_area div.apphub_AppName";
 
 	@Override
@@ -43,7 +45,7 @@ public class GamesAdapter implements JsonDeserializer<List<Game>> {
 					}
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.error(e.getMessage());
 			}
 
 		}
@@ -55,6 +57,7 @@ public class GamesAdapter implements JsonDeserializer<List<Game>> {
 		ObjectContainer connection = Connection.getInstance().getConnection();
 		connection.store(game);
 		connection.commit();
+		log.info("Object stored: " + game.toString());
 	}
 
 }
