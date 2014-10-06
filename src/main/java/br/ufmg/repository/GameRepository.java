@@ -4,7 +4,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import br.ufmg.domain.Game;
-import br.ufmg.repository.gson.GamesAdapter;
+import br.ufmg.repository.adapter.GamesAdapter;
 
 import com.github.koraktor.steamcondenser.steam.community.WebApi;
 import com.google.gson.Gson;

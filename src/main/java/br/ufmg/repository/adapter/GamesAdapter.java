@@ -1,4 +1,4 @@
-package br.ufmg.repository.gson;
+package br.ufmg.repository.adapter;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -27,6 +27,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
 public class GamesAdapter implements JsonDeserializer<List<Game>> {
+
+	private static final String RELEASE_DATE_FORMAT = "d MMM, yyyy";
 	private static final String APP_NAME_SELECTOR = "div.game_title_area div.apphub_AppName";
 	private static final String RELEASE_DATE_SELECTOR = "div.release_date span.date";
 	private static final String DLC_CATEGORY = "Downloadable Content";
@@ -71,7 +73,6 @@ public class GamesAdapter implements JsonDeserializer<List<Game>> {
 		ObjectContainer connection = Connection.getInstance().getConnection();
 		connection.store(game);
 		connection.commit();
-		connection.close();
 	}
 
 	private void parseGame(Game game, Document html) {
@@ -126,7 +127,7 @@ public class GamesAdapter implements JsonDeserializer<List<Game>> {
 	private Date parseDateValue(String releaseDateStr) {
 		Date releaseDate = null;
 		try {
-			releaseDate = new SimpleDateFormat("d MMM, yyyy").parse(releaseDateStr);
+			releaseDate = new SimpleDateFormat(RELEASE_DATE_FORMAT).parse(releaseDateStr);
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
