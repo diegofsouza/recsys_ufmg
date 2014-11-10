@@ -1,16 +1,16 @@
 package br.ufmg.database;
 
-import com.db4o.Db4oEmbedded;
-import com.db4o.ObjectContainer;
-
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 
 public class Connection {
-	private static final String DB4O_FILENAME = "recsys.yap";
-	private ObjectContainer db4o;
+	private static final String DATABASE_FILE = "recsys.odb";
+	private EntityManagerFactory factory;
 	private static Connection instance;
 
 	private Connection() {
-		db4o = Db4oEmbedded.openFile(Db4oEmbedded.newConfiguration(), DB4O_FILENAME);
+		factory = Persistence.createEntityManagerFactory(DATABASE_FILE);
 	}
 
 	public static Connection getInstance() {
@@ -21,7 +21,7 @@ public class Connection {
 		return instance;
 	}
 
-	public ObjectContainer getConnection() {
-		return this.db4o;
+	public EntityManager getConnection() {
+		return this.factory.createEntityManager();
 	}
 }

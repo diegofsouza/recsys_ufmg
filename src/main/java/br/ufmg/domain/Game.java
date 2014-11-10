@@ -3,10 +3,18 @@ package br.ufmg.domain;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.OneToOne;
+
 import com.google.gson.annotations.SerializedName;
 
+@Entity
 public class Game {
 	@SerializedName("appid")
+	@Id
 	private Long id;
 	private String name;
 	private List<String> tags;
@@ -15,6 +23,7 @@ public class Game {
 	private List<String> developers;
 	private List<String> publishers;
 	private Date release;
+	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Review review;
 	private String about;
 

@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -30,50 +31,55 @@ public class GameParser {
 	private static final String PUBLISHERS_SELECTOR = "div.details_block a[href*=publisher]";
 	private static final String CATEGORIES_SELECTOR = "div#category_block a.name";
 	private static final String TAGS_SELECTOR = "div.popular_tags a.app_tag";
-	private Game game;
+	private static final String APP_NAME_SELECTOR = "div.game_title_area div.apphub_AppName";
 
-	public GameParser(Game game) {
-		this.game = game;
-	}
-
-	public void parseGame(Document html) {
+	public Game parseGame(Document html, Long appId) {
+		Game game = null;
+		String appName = html.select(APP_NAME_SELECTOR).text();
 		List<String> categories = this.getElementTexts(html, CATEGORIES_SELECTOR);
-		if (!this.isDownloadableContent(categories)) {
-			log.info("parsing game: " + this.game.toString());
-			this.game.setCategories(categories);
+		if (!StringUtils.isEmpty(appName) || !this.isDownloadableContent(categories)) {
+			game = new Game();
+			game.setId(appId);
+			game.setName(appName);
+
+			log.info("parsing game: " + game.toString());
+			game.setCategories(categories);
 
 			List<String> tags = this.getElementTexts(html, TAGS_SELECTOR);
-			this.game.setTags(tags);
+			game.setTags(tags);
 
 			String releaseDateStr = html.select(RELEASE_DATE_SELECTOR).text();
 			Date releaseDate = this.parseDateValue(releaseDateStr);
-			this.game.setRelease(releaseDate);
+			game.setRelease(releaseDate);
 
-			String reviewStr = html.select(REVIEW_SELECTOR).get(0).attr(REVIEW_TEXT_DATA_ATTR);
-			Review review = this.parseReview(reviewStr);
-			this.game.setReview(review);
+			Elements reviewElement = html.select(REVIEW_SELECTOR);
+			if (reviewElement.size() > 0) {
+				String reviewStr = reviewElement.get(0).attr(REVIEW_TEXT_DATA_ATTR);
+				Review review = this.parseReview(reviewStr);
+				game.setReview(review);
+			}
 
 			String about = html.select(GAME_DESCRIPTION_SELECTOR).text();
-			this.game.setAbout(about);
+			game.setAbout(about);
 
 			Elements gameDetailsElements = html.select(GAME_DETAILS_BASE_SELECTOR);
 			List<String> genres = this.getElementTexts(gameDetailsElements, GENRES_SELECTOR);
-			this.game.setGenres(genres);
+			game.setGenres(genres);
 
 			List<String> developers = this.getElementTexts(gameDetailsElements, DEVELOPERS_SELECTOR);
-			this.game.setDevelopers(developers);
+			game.setDevelopers(developers);
 
 			List<String> publishers = this.getElementTexts(gameDetailsElements, PUBLISHERS_SELECTOR);
-			this.game.setPublishers(publishers);
+			game.setPublishers(publishers);
 		} else {
-			log.error("DLC: " + this.game.toString());
-			this.game = null;
+			log.error("DLC ignored: " + appId);
 		}
 
+		return game;
 	}
 
 	private boolean isDownloadableContent(List<String> categories) {
-		return categories.contains(DLC_CATEGORY);
+		return categories.contains(DLC_CATEGORY) || categories.isEmpty();
 	}
 
 	private Review parseReview(String reviewStr) {
