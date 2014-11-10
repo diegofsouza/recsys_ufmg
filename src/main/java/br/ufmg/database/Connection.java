@@ -8,9 +8,11 @@ public class Connection {
 	private static final String DATABASE_FILE = "recsys.odb";
 	private EntityManagerFactory factory;
 	private static Connection instance;
+	private EntityManager entityManager;
 
 	private Connection() {
-		factory = Persistence.createEntityManagerFactory(DATABASE_FILE);
+		this.factory = Persistence.createEntityManagerFactory(DATABASE_FILE);
+		this.entityManager = this.factory.createEntityManager();
 	}
 
 	public static Connection getInstance() {
@@ -22,6 +24,19 @@ public class Connection {
 	}
 
 	public EntityManager getConnection() {
-		return this.factory.createEntityManager();
+		if (!factory.isOpen()) {
+			this.factory = Persistence.createEntityManagerFactory(DATABASE_FILE);
+		}
+
+		if (!this.entityManager.isOpen()) {
+			this.entityManager = this.factory.createEntityManager();
+		}
+
+		return this.entityManager;
+	}
+
+	public void close() {
+		instance.close();
+		factory.close();
 	}
 }

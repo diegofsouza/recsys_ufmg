@@ -3,8 +3,11 @@ package br.ufmg.repository;
 import java.lang.reflect.Type;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.apache.log4j.Logger;
 
+import br.ufmg.database.Connection;
 import br.ufmg.domain.Game;
 import br.ufmg.repository.adapter.GamesAdapter;
 
@@ -25,6 +28,7 @@ public class GameRepository {
 	private static final int INTERFACE_VERSION = 2;
 	private static final String GET_APP_LIST = "GetAppList";
 	private static final String GAME_INTERFACE = "ISteamApps";
+	private static final Connection CONNECTION = Connection.getInstance();
 
 	public void importGames() {
 		String json = null;
@@ -42,5 +46,32 @@ public class GameRepository {
 		}.getType();
 
 		gson.fromJson(jsonObject.get(JSON_APPS), type);
+	}
+
+	public boolean existsInDatabase(Game game) {
+		TypedQuery<Long> count = CONNECTION.getConnection().createQuery("select count(g) from Game g where g.id = :id", Long.class);
+		count.setParameter("id", game.getId());
+
+		return count.getSingleResult() > 0;
+	}
+
+	public void storeGame(Game game) {
+		CONNECTION.getConnection().getTransaction().begin();
+		CONNECTION.getConnection().persist(game);
+		CONNECTION.getConnection().getTransaction().commit();
+		CONNECTION.getConnection().flush();
+		log.info("Object stored!");
+	}
+
+	public void close() {
+		CONNECTION.close();
+	}
+
+	public Game get(Long id) {
+		TypedQuery<Game> game = CONNECTION.getConnection().createQuery("select count(g) from Game g where g.id = :id", Game.class);
+		game.setParameter("id", id);
+
+		return game.getSingleResult();
+
 	}
 }
