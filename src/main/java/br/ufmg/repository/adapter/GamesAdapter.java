@@ -31,7 +31,6 @@ public class GamesAdapter implements JsonDeserializer<List<Game>> {
 		log.info("List of games/DLC found: " + gamesJsonArray.size());
 		for (JsonElement jsonElement : gamesJsonArray) {
 			Game game = context.deserialize(jsonElement, Game.class);
-			if (game.getId() < 332470) continue;
 			if (gameRepository.existsInDatabase(game)) {
 				log.info("Game exists in database: " + game.toString());
 				continue;
