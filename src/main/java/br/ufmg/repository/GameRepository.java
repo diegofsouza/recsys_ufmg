@@ -3,6 +3,7 @@ package br.ufmg.repository;
 import java.lang.reflect.Type;
 import java.util.List;
 
+import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
@@ -49,10 +50,16 @@ public class GameRepository {
 	}
 
 	public boolean existsInDatabase(Game game) {
+		boolean found = false;
 		TypedQuery<Long> count = CONNECTION.getConnection().createQuery("select count(g) from Game g where g.id = :id", Long.class);
 		count.setParameter("id", game.getId());
+		try {
+			found = count.getSingleResult() > 0;
+		} catch (PersistenceException e) {
+			log.error(e);
+		}
 
-		return count.getSingleResult() > 0;
+		return found;
 	}
 
 	public void storeGame(Game game) {

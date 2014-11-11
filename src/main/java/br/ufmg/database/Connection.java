@@ -6,8 +6,8 @@ import javax.persistence.Persistence;
 
 public class Connection {
 	private static final String DATABASE_FILE = "recsys.odb";
-	private EntityManagerFactory factory;
 	private static Connection instance;
+	private EntityManagerFactory factory;
 	private EntityManager entityManager;
 
 	private Connection() {
