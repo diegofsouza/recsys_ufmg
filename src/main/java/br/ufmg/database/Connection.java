@@ -36,7 +36,7 @@ public class Connection {
 	}
 
 	public void close() {
-		instance.close();
+		entityManager.close();
 		factory.close();
 	}
 }
