@@ -3,6 +3,7 @@ package br.ufmg.repository;
 import java.lang.reflect.Type;
 import java.util.List;
 
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
 
@@ -29,7 +30,7 @@ public class GameRepository {
 	private static final int INTERFACE_VERSION = 2;
 	private static final String GET_APP_LIST = "GetAppList";
 	private static final String GAME_INTERFACE = "ISteamApps";
-	private static final Connection CONNECTION = Connection.getInstance();
+	private Connection CONNECTION = Connection.getInstance();
 
 	public void importGames() {
 		String json = null;
@@ -75,10 +76,14 @@ public class GameRepository {
 	}
 
 	public Game get(Long id) {
-		TypedQuery<Game> game = CONNECTION.getConnection().createQuery("select count(g) from Game g where g.id = :id", Game.class);
-		game.setParameter("id", id);
+		Game game = null;
+		try {
+			game = CONNECTION.getConnection().getReference(Game.class, id);
+		} catch (EntityNotFoundException e) {
+			log.debug(e);
+		}
 
-		return game.getSingleResult();
+		return game;
 
 	}
 }

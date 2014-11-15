@@ -13,8 +13,8 @@ import com.google.gson.annotations.SerializedName;
 
 @Entity
 public class Game {
-	@SerializedName("appid")
 	@Id
+	@SerializedName("appid")
 	private Long id;
 	private String name;
 	private List<String> tags;

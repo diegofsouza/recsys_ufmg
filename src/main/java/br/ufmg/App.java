@@ -1,6 +1,7 @@
 package br.ufmg;
 
 import br.ufmg.repository.GameRepository;
+import br.ufmg.service.UserService;
 
 /**
  * Hello world!
@@ -23,7 +24,8 @@ public class App {
 	}
 
 	private static void importUsers() {
-
+		UserService service = new UserService();
+		service.importUsers();
 	}
 
 	private static void importGames() {

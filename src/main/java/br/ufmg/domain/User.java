@@ -3,14 +3,23 @@ package br.ufmg.domain;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+
+@Entity
 public class User {
+	@Id
 	private Long id;
 	private String nickname;
-	private Float hoursPlayed;
 	private String location;
 	private Date memberSince;
-	private List<Game> games;
-	private List<User> friends;
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<UserGame> userGames;
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<Long> friendIds;
 
 	public Long getId() {
 		return id;
@@ -18,14 +27,6 @@ public class User {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public Float getHoursPlayed() {
-		return hoursPlayed;
-	}
-
-	public void setHoursPlayed(Float hoursPlayed) {
-		this.hoursPlayed = hoursPlayed;
 	}
 
 	public String getLocation() {
@@ -44,20 +45,20 @@ public class User {
 		this.memberSince = memberSince;
 	}
 
-	public List<Game> getGames() {
-		return games;
+	public List<UserGame> getUserGames() {
+		return userGames;
 	}
 
-	public void setGames(List<Game> games) {
-		this.games = games;
+	public void setUserGames(List<UserGame> userGames) {
+		this.userGames = userGames;
 	}
 
-	public List<User> getFriends() {
-		return friends;
+	public List<Long> getFriendIds() {
+		return friendIds;
 	}
 
-	public void setFriends(List<User> friends) {
-		this.friends = friends;
+	public void setFriendIds(List<Long> friendIds) {
+		this.friendIds = friendIds;
 	}
 
 	public String getNickname() {

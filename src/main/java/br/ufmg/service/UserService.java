@@ -1,14 +1,15 @@
 package br.ufmg.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
-import br.ufmg.domain.Game;
 import br.ufmg.domain.User;
-import br.ufmg.repository.GameRepository;
+import br.ufmg.domain.UserGame;
 import br.ufmg.repository.UserRepository;
 
 import com.github.koraktor.steamcondenser.exceptions.SteamCondenserException;
@@ -17,88 +18,86 @@ import com.github.koraktor.steamcondenser.steam.community.SteamId;
 
 public class UserService {
 	private static final Logger log = Logger.getLogger(UserRepository.class);
-	private static final long START_USER_ID = 76561100000000000L;
+	private static final long START_USER_ID = 76561197960287900L;
 	// private static final long STEAM_FIRST_USER_ID = 76561197960287930L;
 	/** User test created 03-10. */
 	private static final long DIEGO_TEST_USER_ID = 76561198157200427L;
-	private GameRepository gameRepository = new GameRepository();
 	private UserRepository userRepository = new UserRepository();
 
 	public void importUsers() {
-		long error = 0;
-		long ok = 0;
 		long firstUser = START_USER_ID;
 		long lastUser = DIEGO_TEST_USER_ID;
-		for (int i = 0; i < lastUser; i++) {
+		for (long currentUserId = firstUser; currentUserId < lastUser; currentUserId++) {
+			User foundUser = this.userRepository.get(currentUserId);
+			if (foundUser != null) {
+				continue;
+			}
 			try {
-				SteamId id = SteamId.create(firstUser++);
-				if (id != null) {
-					ok++;
-					User user = getUser(id);
-					userRepository.storeUser(user);
+				SteamId steamId = SteamId.create(currentUserId);
+				if (steamId != null) {
+					User user = this.getUser(steamId);
+					if (!CollectionUtils.isEmpty(user.getUserGames())) {
+						userRepository.storeUser(user);
+					}
 				}
+				firstUser++;
 			} catch (SteamCondenserException e) {
-				error++;
+				log.info(e.getMessage() + currentUserId);
 			}
 		}
 
-		System.out.println("Errors: " + error + " / Ok: " + ok);
+		userRepository.close();
 	}
 
 	private User getUser(SteamId steamId) {
 		long id = steamId.getSteamId64();
-		log.info("Parsing user " + id);
+		log.info(String.format("Parsing user %d: %s", steamId.getSteamId64(), steamId.getNickname()));
 		User user = new User();
 		user.setId(id);
 		user.setNickname(steamId.getNickname());
-		user.setHoursPlayed(steamId.getHoursPlayed());
 		user.setLocation(steamId.getLocation());
 		user.setMemberSince(steamId.getMemberSince());
-		user.setFriends(this.getFriends(steamId));
-		user.setGames(this.getGames(steamId));
+		user.setUserGames(this.getUserGames(steamId));
+		user.setFriendIds(this.getFriendIds(steamId));
 
 		return user;
 	}
 
-	private List<Game> getGames(SteamId steamId) {
-		List<Game> games = null;
-		try {
-			if (steamId.getGames() != null) {
-				games = new ArrayList<Game>(steamId.getGames().size());
-				for (Entry<Integer, SteamGame> steamGame : steamId.getGames().entrySet()) {
-					int gameId = steamGame.getValue().getAppId();
-					Game game = this.gameRepository.get(Long.valueOf(gameId));
-					if (game != null) {
-						games.add(game);
-					} else {
-						log.info(String.format("User game not found: [%d]: %s", gameId, steamGame.getValue().getName()));
-					}
-				}
+	private List<Long> getFriendIds(SteamId id) {
+		List<Long> friendIds = null;
 
+		try {
+			SteamId[] friends = id.getFriends();
+			friendIds = new ArrayList<Long>(friends.length);
+			for (SteamId steamId : friends) {
+				friendIds.add(steamId.getSteamId64());
 			}
 		} catch (SteamCondenserException e) {
 			log.error(e);
 		}
 
-		return games;
+		return friendIds;
 	}
 
-	private List<User> getFriends(SteamId id) {
-		List<User> friends = new ArrayList<User>();
+	private List<UserGame> getUserGames(SteamId steamId) {
+		List<UserGame> userGames = null;
 		try {
-			for (SteamId steamId : id.getFriends()) {
-				User user = this.userRepository.get(steamId.getSteamId64());
-				if (user == null) {
-					user = this.getUser(steamId);
-					userRepository.storeUser(user);
+			HashMap<Integer, SteamGame> steamGames = steamId.getGames();
+			if (steamGames != null) {
+				userGames = new ArrayList<UserGame>(steamGames.size());
+				for (Entry<Integer, SteamGame> steamGame : steamGames.entrySet()) {
+					int gameId = steamGame.getValue().getAppId();
+					int totalPlaytime = steamId.getTotalPlaytime(steamGame.getValue().getAppId());
+					UserGame userGame = new UserGame(gameId, totalPlaytime);
+
+					userGames.add(userGame);
 				}
 
-				friends.add(user);
 			}
 		} catch (SteamCondenserException e) {
 			log.error(e);
 		}
 
-		return friends;
+		return userGames;
 	}
 }
