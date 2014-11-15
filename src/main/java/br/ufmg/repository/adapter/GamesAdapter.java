@@ -19,7 +19,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
 public class GamesAdapter implements JsonDeserializer<List<Game>> {
-
+	public static final String STEAM_URL_BASE = "http://store.steampowered.com/";
+	public static final String STEAM_APP_URL_BASE = STEAM_URL_BASE + "app/";
 	private static final String APP_URL_PARTIAL = "/app/";
 	private static final Logger log = Logger.getLogger(GamesAdapter.class);
 	private GameRepository gameRepository = new GameRepository();
@@ -36,7 +37,7 @@ public class GamesAdapter implements JsonDeserializer<List<Game>> {
 				continue;
 			}
 			try {
-				String appUrl = GameRepository.STEAM_APP_URL_BASE + game.getId();
+				String appUrl = STEAM_APP_URL_BASE + game.getId();
 				Document html = Jsoup.connect(appUrl).get();
 				if (this.isDocumentValid(game, html)) {
 					GameParser parser = new GameParser();
