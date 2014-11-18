@@ -11,6 +11,7 @@ public class TasteItemSimilarity {
 	private Long sourceItemId;
 	private Long targetItemId;
 	private BigDecimal similarity;
+	private SimilarityType type;
 
 	@Override
 	public String toString() {

@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 
+import br.ufmg.domain.SimilarityType;
 import br.ufmg.domain.TasteItemSimilarity;
 import br.ufmg.repository.rowmapper.SimilarityRowMapper;
 
@@ -48,6 +49,7 @@ public class SimilarityRepository extends BaseRepository {
 					tasteItemSimilarity.setSourceItemId(sourceItemId);
 					tasteItemSimilarity.setTargetItemId(targetItemId);
 					tasteItemSimilarity.setSimilarity(itemSimilarityValue);
+					tasteItemSimilarity.setType(SimilarityType.ITEM_BASED);
 
 					this.save(tasteItemSimilarity);
 				}
@@ -67,7 +69,7 @@ public class SimilarityRepository extends BaseRepository {
 	}
 
 	public void save(TasteItemSimilarity similarity) {
-		TasteItemSimilarity foundSimilarity = this.get(similarity.getSourceItemId(), similarity.getTargetItemId());
+		TasteItemSimilarity foundSimilarity = this.get(similarity.getSourceItemId(), similarity.getTargetItemId(), similarity.getType().getId());
 		if (foundSimilarity != null) {
 			this.update(similarity);
 		} else {
@@ -75,12 +77,17 @@ public class SimilarityRepository extends BaseRepository {
 		}
 	}
 
-	public TasteItemSimilarity get(long sourceItemId, long targetItemId) {
+	public TasteItemSimilarity get(long sourceItemId, long targetItemId, int typeId) {
 		TasteItemSimilarity similarity = null;
+		StringBuilder query = new StringBuilder();
+		query.append("select s.* from taste_item_similarity s");
+		query.append(" where");
+		query.append(" s.type_id = ?");
+		query.append(" and s.item_id_a = ? and s.item_id_b = ?");
+		query.append(" or s.item_id_a = ? and s.item_id_b = ?");
 		try {
-			similarity = this.jdbcTemplate.queryForObject(
-					"select s.* from taste_item_similarity s where s.item_id_a = ? and s.item_id_b = ? or s.item_id_a = ? and s.item_id_b = ?",
-					similarityRowMapper, sourceItemId, targetItemId, targetItemId, sourceItemId);
+			similarity = this.jdbcTemplate
+					.queryForObject(query.toString(), similarityRowMapper, typeId, sourceItemId, targetItemId, targetItemId, sourceItemId);
 		} catch (EmptyResultDataAccessException e) {
 			log.debug(e.getMessage());
 		}
@@ -92,19 +99,23 @@ public class SimilarityRepository extends BaseRepository {
 		StringBuilder query = new StringBuilder();
 		query.append("insert into taste_item_similarity");
 		query.append(" (item_id_a, item_id_b, similarity)");
-		query.append(" values (?, ?, ?)");
+		query.append(" values (?, ?, ?, ?)");
 
-		this.jdbcTemplate.update(query.toString(), similarity.getSourceItemId(), similarity.getTargetItemId(), similarity.getSimilarity());
+		this.jdbcTemplate.update(query.toString(), similarity.getSourceItemId(), similarity.getTargetItemId(), similarity.getSimilarity(), similarity.getType()
+				.getId());
 	}
 
 	public void update(TasteItemSimilarity similarity) {
 		StringBuilder query = new StringBuilder();
-		query.append("update taste_item_similarity");
+		query.append("update taste_item_similarity s");
 		query.append(" set similarity = ?");
-		query.append(" where item_id_a = ? and item_id_b = ? or item_id_a = ? and item_id_b = ?");
+		query.append(" where");
+		query.append(" s.type_id = ?");
+		query.append(" and s.item_id_a = ? and s.item_id_b = ?");
+		query.append(" or s.item_id_a = ? and s.item_id_b = ?");
 
-		this.jdbcTemplate.update(query.toString(), similarity.getSimilarity(), similarity.getSourceItemId(), similarity.getTargetItemId(),
-				similarity.getTargetItemId(), similarity.getSourceItemId());
+		this.jdbcTemplate.update(query.toString(), similarity.getSimilarity(), similarity.getType().getId(), similarity.getSourceItemId(),
+				similarity.getTargetItemId(), similarity.getTargetItemId(), similarity.getSourceItemId());
 	}
 
 }
