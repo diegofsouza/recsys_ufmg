@@ -11,8 +11,8 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.stereotype.Repository;
 
+import br.ufmg.domain.TastePreference;
 import br.ufmg.domain.User;
-import br.ufmg.domain.UserGame;
 import br.ufmg.repository.rowmapper.UserRowMapper;
 
 @Repository
@@ -23,7 +23,7 @@ public class UserRepository extends BaseRepository {
 
 	public void create(User user) {
 		StringBuilder query = new StringBuilder();
-		query.append("insert into User");
+		query.append("insert into user");
 		query.append(" (id, location, member_since, friend_ids, nickname)");
 		query.append(" values (?, ?, ?, ?, ?)");
 
@@ -33,36 +33,36 @@ public class UserRepository extends BaseRepository {
 		}
 		this.jdbcTemplate.update(query.toString(), user.getId(), user.getLocation(), user.getMemberSince(), friendIdStr, user.getNickname());
 
-		if (!CollectionUtils.isEmpty(user.getUserGames())) {
-			this.saveUserGames(user.getUserGames());
+		if (!CollectionUtils.isEmpty(user.getTastePreferences())) {
+			this.saveTastePreferences(user.getTastePreferences());
 		}
 	}
 
-	private void saveUserGames(final List<UserGame> userGames) {
+	private void saveTastePreferences(final List<TastePreference> tastePreferences) {
 		StringBuilder query = new StringBuilder();
-		query.append("insert into UserGame");
-		query.append(" (user_id, game_id, minutes_played)");
+		query.append("insert into taste_preferences");
+		query.append(" (user_id, item_id, minutes_played)");
 		query.append(" values (?, ?, ?)");
 
 		this.jdbcTemplate.batchUpdate(query.toString(), new BatchPreparedStatementSetter() {
 			@Override
 			public void setValues(PreparedStatement ps, int i) throws SQLException {
-				UserGame userGame = userGames.get(i);
-				ps.setLong(1, userGame.getUserId());
-				ps.setInt(2, userGame.getGameId());
-				ps.setInt(3, userGame.getMinutesPlayed());
+				TastePreference tastePreference = tastePreferences.get(i);
+				ps.setLong(1, tastePreference.getUserId());
+				ps.setInt(2, tastePreference.getGameId());
+				ps.setInt(3, tastePreference.getMinutesPlayed());
 			}
 
 			@Override
 			public int getBatchSize() {
-				return userGames.size();
+				return tastePreferences.size();
 			}
 		});
 
 	}
 
 	public List<User> list() {
-		List<User> users = this.jdbcTemplate.query("select u.* from User u order by u.id", userRowMapper);
+		List<User> users = this.jdbcTemplate.query("select u.* from user u order by u.id", userRowMapper);
 
 		return users;
 	}
@@ -70,7 +70,7 @@ public class UserRepository extends BaseRepository {
 	public User get(long id) {
 		User user = null;
 		try {
-			user = this.jdbcTemplate.queryForObject("select u.* from User u where u.id = ?", userRowMapper, id);
+			user = this.jdbcTemplate.queryForObject("select u.* from user u where u.id = ?", userRowMapper, id);
 		} catch (EmptyResultDataAccessException e) {
 			log.debug(e.getMessage());
 		}

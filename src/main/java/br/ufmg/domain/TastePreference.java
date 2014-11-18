@@ -3,11 +3,11 @@ package br.ufmg.domain;
 import lombok.Data;
 
 @Data
-public class UserGame {
-	private Long id;
+public class TastePreference {
 	private Long userId;
-	private Integer minutesPlayed;
 	private Integer gameId;
+	private Integer minutesPlayed;
+	private Data lastUpdate;
 
 	@Override
 	public String toString() {

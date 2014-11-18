@@ -15,7 +15,7 @@ public class GameRankingRepository extends BaseRepository {
 
 	public void create(GameRanking ranking) {
 		StringBuilder query = new StringBuilder();
-		query.append("insert into GameRanking");
+		query.append("insert into game_ranking");
 		query.append(" (game_id, ranking, minutes_played)");
 		query.append(" values (?, ?, ?)");
 

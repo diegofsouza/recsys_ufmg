@@ -18,7 +18,7 @@ public class GameRepository extends BaseRepository {
 
 	public void create(Game game) {
 		StringBuilder query = new StringBuilder();
-		query.append("insert into Game");
+		query.append("insert into game");
 		query.append(" (id, name, tags, categories, genres, developers, publishers, releaseDate, about, totalReview, positivePercentReview)");
 		query.append(" values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
@@ -29,7 +29,7 @@ public class GameRepository extends BaseRepository {
 	public Game get(int id) {
 		Game game = null;
 		try {
-			game = this.jdbcTemplate.queryForObject("select g.* from Game g where g.id = ?", gameRowMapper, id);
+			game = this.jdbcTemplate.queryForObject("select g.* from game g where g.id = ?", gameRowMapper, id);
 		} catch (EmptyResultDataAccessException e) {
 			log.debug(e.getMessage());
 		}
@@ -38,7 +38,7 @@ public class GameRepository extends BaseRepository {
 	}
 
 	public List<Game> list() {
-		List<Game> games = this.jdbcTemplate.query("select g.* from Game g order by g.id", gameRowMapper);
+		List<Game> games = this.jdbcTemplate.query("select g.* from game g order by g.id", gameRowMapper);
 
 		return games;
 	}

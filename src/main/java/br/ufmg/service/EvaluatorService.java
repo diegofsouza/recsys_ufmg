@@ -13,7 +13,7 @@ import org.apache.mahout.cf.taste.impl.model.GenericBooleanPrefDataModel;
 import org.apache.mahout.cf.taste.model.DataModel;
 
 import br.ufmg.domain.User;
-import br.ufmg.domain.UserGame;
+import br.ufmg.domain.TastePreference;
 import br.ufmg.repository.UserRepository;
 import br.ufmg.service.builders.ItemBasedRecommenderBuilder;
 import br.ufmg.service.builders.UserBasedRecommenderBuilder;

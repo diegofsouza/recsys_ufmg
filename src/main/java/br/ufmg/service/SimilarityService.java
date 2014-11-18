@@ -1,14 +1,24 @@
 package br.ufmg.service;
 
-import org.apache.log4j.Logger;
+import java.util.List;
 
-import br.ufmg.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import br.ufmg.domain.TasteItemSimilarity;
+import br.ufmg.repository.SimilarityRepository;
+
+@Service
 public class SimilarityService {
-	private static final Logger log = Logger.getLogger(RecommendationService.class);
-	private UserRepository userRepository = new UserRepository();
+	@Autowired
+	SimilarityRepository similarityRepository;
 
-	public void evaluate() {
+	public List<TasteItemSimilarity> index() {
+		return similarityRepository.index();
+	}
+
+	public List<TasteItemSimilarity> list() {
+		return similarityRepository.list();
 	}
 
 }

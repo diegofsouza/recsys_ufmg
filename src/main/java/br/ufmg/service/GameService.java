@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 
 import br.ufmg.domain.Game;
 import br.ufmg.domain.GameRanking;
+import br.ufmg.domain.TastePreference;
 import br.ufmg.domain.User;
-import br.ufmg.domain.UserGame;
 import br.ufmg.repository.GameRepository;
 import br.ufmg.repository.GameRestRepository;
 
@@ -31,13 +31,13 @@ public class GameService {
 	public void buildGameRanking() {
 		List<Game> games = gameRepository.list();
 		List<User> users = null;// userRepository.list();
-		UserGame userGame = new UserGame();
+		TastePreference tastePreference = new TastePreference();
 		for (Game game : games) {
 			GameRanking gameRanking = new GameRanking();
 			gameRanking.setId(game.getId());
-			userGame.setGameId(game.getId());
+			tastePreference.setGameId(game.getId());
 			for (User user : users) {
-				if (user.getUserGames().contains(userGame)) {
+				if (user.getTastePreferences().contains(tastePreference)) {
 					gameRanking.addRankingValue(1.0);
 				}
 			}

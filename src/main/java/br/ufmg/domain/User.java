@@ -11,7 +11,7 @@ public class User {
 	private String nickname;
 	private String location;
 	private Date memberSince;
-	private List<UserGame> userGames;
+	private List<TastePreference> tastePreferences;
 	private List<Long> friendIds;
 
 	@Override
