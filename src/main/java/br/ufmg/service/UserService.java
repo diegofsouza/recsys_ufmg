@@ -1,12 +1,14 @@
 package br.ufmg.service;
 
+//import java.util.ArrayList;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import br.ufmg.domain.User;
 import br.ufmg.domain.UserGame;
@@ -16,16 +18,19 @@ import com.github.koraktor.steamcondenser.exceptions.SteamCondenserException;
 import com.github.koraktor.steamcondenser.steam.community.SteamGame;
 import com.github.koraktor.steamcondenser.steam.community.SteamId;
 
+@Service
 public class UserService {
-	private static final Logger log = Logger.getLogger(UserRepository.class);
+	private static final Logger log = Logger.getLogger(UserService.class);
 	private static final long START_USER_ID = 76561197960287900L;
 	// private static final long STEAM_FIRST_USER_ID = 76561197960287930L;
 	/** User test created 03-10. */
 	private static final long DIEGO_TEST_USER_ID = 76561198157200427L;
-	private UserRepository userRepository = new UserRepository();
 
-	public void importUsers() {
-		long firstUser = START_USER_ID;
+	@Autowired
+	private UserRepository userRepository;
+
+	public List<User> importUsers() {
+		long firstUser = 76561197960315758L;//last stop
 		long lastUser = DIEGO_TEST_USER_ID;
 		for (long currentUserId = firstUser; currentUserId < lastUser; currentUserId++) {
 			User foundUser = this.userRepository.get(currentUserId);
@@ -34,11 +39,10 @@ public class UserService {
 			}
 			try {
 				SteamId steamId = SteamId.create(currentUserId);
-				if (steamId != null) {
+				HashMap<Integer, SteamGame> steamGames = steamId.getGames();
+				if (steamId != null && steamGames != null && !steamGames.isEmpty()) {
 					User user = this.getUser(steamId);
-					if (!CollectionUtils.isEmpty(user.getUserGames())) {
-						userRepository.storeUser(user);
-					}
+					userRepository.create(user);
 				}
 				firstUser++;
 			} catch (SteamCondenserException e) {
@@ -46,7 +50,11 @@ public class UserService {
 			}
 		}
 
-		userRepository.close();
+		return this.list();
+	}
+
+	public List<User> list() {
+		return userRepository.list();
 	}
 
 	private User getUser(SteamId steamId) {
@@ -88,7 +96,10 @@ public class UserService {
 				for (Entry<Integer, SteamGame> steamGame : steamGames.entrySet()) {
 					int gameId = steamGame.getValue().getAppId();
 					int totalPlaytime = steamId.getTotalPlaytime(steamGame.getValue().getAppId());
-					UserGame userGame = new UserGame(gameId, totalPlaytime);
+					UserGame userGame = new UserGame();
+					userGame.setGameId(gameId);
+					userGame.setMinutesPlayed(totalPlaytime);
+					userGame.setUserId(steamId.getSteamId64());
 
 					userGames.add(userGame);
 				}

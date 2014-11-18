@@ -14,7 +14,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import br.ufmg.domain.Game;
-import br.ufmg.domain.Review;
 
 public class GameParser {
 
@@ -33,7 +32,7 @@ public class GameParser {
 	private static final String TAGS_SELECTOR = "div.popular_tags a.app_tag";
 	private static final String APP_NAME_SELECTOR = "div.game_title_area div.apphub_AppName";
 
-	public Game parseGame(Document html, Long appId) {
+	public Game parseGame(Document html, Integer appId) {
 		Game game = null;
 		String appName = html.select(APP_NAME_SELECTOR).text();
 		List<String> categories = this.getElementTexts(html, CATEGORIES_SELECTOR);
@@ -50,13 +49,18 @@ public class GameParser {
 
 			String releaseDateStr = html.select(RELEASE_DATE_SELECTOR).text();
 			Date releaseDate = this.parseDateValue(releaseDateStr);
-			game.setRelease(releaseDate);
+			game.setReleaseDate(releaseDate);
 
 			Elements reviewElement = html.select(REVIEW_SELECTOR);
 			if (reviewElement.size() > 0) {
 				String reviewStr = reviewElement.get(0).attr(REVIEW_TEXT_DATA_ATTR);
-				Review review = this.parseReview(reviewStr);
-				game.setReview(review);
+				String positiveReviewPercentage = reviewStr.split("%")[0];
+				String totalReview = reviewStr.split("[0-9]+%\\sof\\sthe\\s")[1];
+				totalReview = totalReview.split("\\suser\\sreviews")[0];
+				totalReview = totalReview.replace(",", "");
+
+				game.setPositivePercentReview(Integer.parseInt(positiveReviewPercentage));
+				game.setTotalReview(Integer.parseInt(totalReview));
 			}
 
 			String about = html.select(GAME_DESCRIPTION_SELECTOR).text();
@@ -80,19 +84,6 @@ public class GameParser {
 
 	private boolean isDownloadableContent(List<String> categories) {
 		return categories.contains(DLC_CATEGORY) || categories.isEmpty();
-	}
-
-	private Review parseReview(String reviewStr) {
-		String positiveReviewPercentage = reviewStr.split("%")[0];
-		String totalReview = reviewStr.split("[0-9]+%\\sof\\sthe\\s")[1];
-		totalReview = totalReview.split("\\suser\\sreviews")[0];
-		totalReview = totalReview.replace(",", "");
-
-		Review review = new Review();
-		review.setPositivePercent(Integer.parseInt(positiveReviewPercentage));
-		review.setTotal(Integer.parseInt(totalReview));
-
-		return review;
 	}
 
 	private Date parseDateValue(String releaseDateStr) {

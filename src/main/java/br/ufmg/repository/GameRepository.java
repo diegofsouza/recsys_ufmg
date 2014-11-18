@@ -1,52 +1,61 @@
 package br.ufmg.repository;
 
-import javax.persistence.EntityNotFoundException;
-import javax.persistence.PersistenceException;
-import javax.persistence.TypedQuery;
+import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.stereotype.Repository;
 
-import br.ufmg.database.Connection;
 import br.ufmg.domain.Game;
+import br.ufmg.repository.rowmapper.GameRowMapper;
 
-public class GameRepository {
+@Repository
+public class GameRepository extends BaseRepository {
 	private static final Logger log = Logger.getLogger(GameRepository.class);
-	private Connection CONNECTION = Connection.getInstance();
+	@Autowired
+	private GameRowMapper gameRowMapper;
 
-	public boolean existsInDatabase(Game game) {
-		boolean found = false;
-		TypedQuery<Long> count = CONNECTION.getConnection().createQuery("select count(g) from Game g where g.id = :id", Long.class);
-		count.setParameter("id", game.getId());
-		try {
-			found = count.getSingleResult() > 0;
-		} catch (PersistenceException e) {
-			log.error(e);
-		}
+	public void create(Game game) {
+		StringBuilder query = new StringBuilder();
+		query.append("insert into Game");
+		query.append(" (id, name, tags, categories, genres, developers, publishers, releaseDate, about, totalReview, positivePercentReview)");
+		query.append(" values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-		return found;
+		this.jdbcTemplate.update(query.toString(), game.getId(), game.getName(), game.getTags(), game.getCategories(), game.getGenres(), game.getDevelopers(),
+				game.getPublishers(), game.getReleaseDate(), game.getAbout(), game.getTotalReview(), game.getPositivePercentReview());
 	}
 
-	public void storeGame(Game game) {
-		CONNECTION.getConnection().getTransaction().begin();
-		CONNECTION.getConnection().persist(game);
-		CONNECTION.getConnection().getTransaction().commit();
-		CONNECTION.getConnection().flush();
-		log.info("Object stored!");
-	}
-
-	public void close() {
-		CONNECTION.close();
-	}
-
-	public Game get(Long id) {
+	public Game get(int id) {
 		Game game = null;
 		try {
-			game = CONNECTION.getConnection().getReference(Game.class, id);
-		} catch (EntityNotFoundException e) {
-			log.debug(e);
+			game = this.jdbcTemplate.queryForObject("select g.* from Game g where g.id = ?", gameRowMapper, id);
+		} catch (EmptyResultDataAccessException e) {
+			log.debug(e.getMessage());
 		}
 
 		return game;
-
 	}
+
+	public List<Game> list() {
+		List<Game> games = this.jdbcTemplate.query("select g.* from Game g order by g.id", gameRowMapper);
+
+		return games;
+	}
+
+	public Integer count(Integer id) {
+		String query = "select count(g.id) from Game g where g.id = ?";
+		Integer count = this.jdbcTemplate.queryForObject(query, Integer.class, id);
+
+		return count;
+	}
+
+	public void create(List<Game> games) {
+		for (Game game : games) {
+			if (this.count(game.getId()) == 0) {
+				this.create(game);
+			}
+		}
+	}
+
 }
