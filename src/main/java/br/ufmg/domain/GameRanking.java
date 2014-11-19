@@ -2,6 +2,8 @@ package br.ufmg.domain;
 
 import lombok.Data;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 @Data
 public class GameRanking {
 	private Integer id;
@@ -18,7 +20,7 @@ public class GameRanking {
 
 	@Override
 	public String toString() {
-		return String.format("[%d] - %.2f ", this.id, this.ranking);
+		return ToStringBuilder.reflectionToString(this);
 	}
 
 }

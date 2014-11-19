@@ -34,4 +34,14 @@
 		<property name="password" value="${database.password}" />
 	</bean>
 
+	<bean id="restTemplate" class="org.springframework.web.client.RestTemplate">
+		<property name="messageConverters">
+			<ref bean="jsonHttpMessageConverter" />
+		</property>
+	</bean>
+
+	<bean id="jsonHttpMessageConverter" class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
+		<property name="supportedMediaTypes" value="application/json" />
+	</bean>
+
 </beans>

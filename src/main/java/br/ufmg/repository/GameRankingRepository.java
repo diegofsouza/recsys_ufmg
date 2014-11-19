@@ -1,5 +1,7 @@
 package br.ufmg.repository;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -16,9 +18,16 @@ public class GameRankingRepository extends BaseRepository {
 	public void create(GameRanking ranking) {
 		StringBuilder query = new StringBuilder();
 		query.append("insert into game_ranking");
-		query.append(" (game_id, ranking, minutes_played)");
+		query.append(" (id, ranking, minutes_played)");
 		query.append(" values (?, ?, ?)");
 
 		this.jdbcTemplate.update(query.toString(), ranking.getId(), ranking.getRanking(), ranking.getMinutesPlayed());
+	}
+
+	public List<GameRanking> list() {
+		List<GameRanking> gameRanking = this.jdbcTemplate.query("select g.* from game_ranking g order by g.id, g.ranking, g.minutes_played",
+				gameRakingRowMapper);
+
+		return gameRanking;
 	}
 }

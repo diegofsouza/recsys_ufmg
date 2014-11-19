@@ -14,7 +14,7 @@ public class GameRakingRowMapper implements RowMapper<GameRanking> {
 	@Override
 	public GameRanking mapRow(ResultSet rs, int rowNum) throws SQLException {
 		GameRanking ranking = new GameRanking();
-		ranking.setId(rs.getInt("game_id"));
+		ranking.setId(rs.getInt("id"));
 		ranking.setRanking(rs.getDouble("ranking"));
 		ranking.setMinutesPlayed(rs.getInt("minutes_played"));
 

@@ -19,7 +19,7 @@ public class SimilarityController {
 	private SimilarityService similarityService;
 
 	@ResponseBody
-	@RequestMapping(value = "/index", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/build", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<TasteItemSimilarity> index() {
 		return this.similarityService.index();
 	}

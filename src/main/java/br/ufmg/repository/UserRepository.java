@@ -13,13 +13,16 @@ import org.springframework.stereotype.Repository;
 
 import br.ufmg.domain.TastePreference;
 import br.ufmg.domain.User;
+import br.ufmg.repository.rowmapper.TastePreferenceRowMapper;
 import br.ufmg.repository.rowmapper.UserRowMapper;
 
 @Repository
 public class UserRepository extends BaseRepository {
 	private static final Logger log = Logger.getLogger(UserRepository.class);
 	@Autowired
-	UserRowMapper userRowMapper;
+	private UserRowMapper userRowMapper;
+	@Autowired
+	private TastePreferenceRowMapper tastePreferenceRowMapper;
 
 	public void create(User user) {
 		StringBuilder query = new StringBuilder();
@@ -34,11 +37,11 @@ public class UserRepository extends BaseRepository {
 		this.jdbcTemplate.update(query.toString(), user.getId(), user.getLocation(), user.getMemberSince(), friendIdStr, user.getNickname());
 
 		if (!CollectionUtils.isEmpty(user.getTastePreferences())) {
-			this.saveTastePreferences(user.getTastePreferences());
+			this.saveTastePreferences(user.getId(), user.getTastePreferences());
 		}
 	}
 
-	private void saveTastePreferences(final List<TastePreference> tastePreferences) {
+	private void saveTastePreferences(final long userId, final List<TastePreference> tastePreferences) {
 		StringBuilder query = new StringBuilder();
 		query.append("insert into taste_preferences");
 		query.append(" (user_id, item_id, minutes_played)");
@@ -48,8 +51,8 @@ public class UserRepository extends BaseRepository {
 			@Override
 			public void setValues(PreparedStatement ps, int i) throws SQLException {
 				TastePreference tastePreference = tastePreferences.get(i);
-				ps.setLong(1, tastePreference.getUserId());
-				ps.setInt(2, tastePreference.getGameId());
+				ps.setLong(1, userId);
+				ps.setInt(2, tastePreference.getItemId());
 				ps.setInt(3, tastePreference.getMinutesPlayed());
 			}
 
@@ -59,6 +62,13 @@ public class UserRepository extends BaseRepository {
 			}
 		});
 
+	}
+
+	public List<TastePreference> getTastePreferences(long userId) {
+		List<TastePreference> tastePreferencs = this.jdbcTemplate.query("select t.* from taste_preferences t where t.user_id = ? order by t.item_id",
+				new Object[] { userId }, tastePreferenceRowMapper);
+
+		return tastePreferencs;
 	}
 
 	public List<User> list() {

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import br.ufmg.domain.Game;
+import br.ufmg.domain.GameRanking;
 import br.ufmg.service.GameService;
 
 @Controller
@@ -23,6 +24,18 @@ public class GameController {
 	@RequestMapping(value = "/import", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<Game> importGames() {
 		return gameService.importGames();
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/rankings/build", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public List<GameRanking> ranking() {
+		return gameService.ranking();
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/rankings", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public List<GameRanking> rankingList() {
+		return gameService.rankingList();
 	}
 
 	@ResponseBody
