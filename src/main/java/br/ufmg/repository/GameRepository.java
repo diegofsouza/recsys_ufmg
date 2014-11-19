@@ -2,10 +2,13 @@ package br.ufmg.repository;
 
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
+
+import com.google.gson.Gson;
 
 import br.ufmg.domain.Game;
 import br.ufmg.repository.rowmapper.GameRowMapper;
@@ -19,11 +22,33 @@ public class GameRepository extends BaseRepository {
 	public void create(Game game) {
 		StringBuilder query = new StringBuilder();
 		query.append("insert into game");
-		query.append(" (id, name, tags, categories, genres, developers, publishers, releaseDate, about, totalReview, positivePercentReview)");
+		query.append(" (id, name, tags, categories, genres, developers, publishers, release_date, about, total_review, positive_percent_review)");
 		query.append(" values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-		this.jdbcTemplate.update(query.toString(), game.getId(), game.getName(), game.getTags(), game.getCategories(), game.getGenres(), game.getDevelopers(),
-				game.getPublishers(), game.getReleaseDate(), game.getAbout(), game.getTotalReview(), game.getPositivePercentReview());
+		Gson gson = new Gson();
+		String tagsJson = null;
+		if (!CollectionUtils.isEmpty(game.getTags())) {
+			tagsJson = gson.toJson(game.getTags());
+		}
+		String categoriesJson = null;
+		if (!CollectionUtils.isEmpty(game.getCategories())) {
+			categoriesJson = gson.toJson(game.getCategories());
+		}
+		String genresJson = null;
+		if (!CollectionUtils.isEmpty(game.getGenres())) {
+			genresJson = gson.toJson(game.getGenres());
+		}
+		String developersJson = null;
+		if (!CollectionUtils.isEmpty(game.getDevelopers())) {
+			developersJson = gson.toJson(game.getDevelopers());
+		}
+		String publishersJson = null;
+		if (!CollectionUtils.isEmpty(game.getPublishers())) {
+			publishersJson = gson.toJson(game.getPublishers());
+		}
+
+		this.jdbcTemplate.update(query.toString(), game.getId(), game.getName(), tagsJson, categoriesJson, genresJson, developersJson, publishersJson,
+				game.getReleaseDate(), game.getAbout(), game.getTotalReview(), game.getPositivePercentReview());
 	}
 
 	public Game get(int id) {

@@ -12,20 +12,19 @@ import br.ufmg.repository.json.wrappers.UserResult;
 
 @Repository
 public class UserRestRepository {
-	private static final String KEY_PARAM = "?key=";
-	@Autowired
-	RestTemplate restTemplate;
 	private static final String STEAM_API = "http://api.steampowered.com";
 	private static final String USER_INTERFACE = "/ISteamUser/GetPlayerSummaries/v0002";
 	private static final String FRIENDS_INTERFACE = "/ISteamUser/GetFriendList/v0001";
-	private static final String API_KEY = "626283C7288C1540C6A54AC7D836D25D";
+	private static final String API_KEY = "?key=626283C7288C1540C6A54AC7D836D25D";
 	private static final String STEAM_IDS_PARAM = "&steamids=";
 	private static final String STEAM_ID_PARAM = "&steamid=";
+
+	@Autowired
+	RestTemplate restTemplate;
 
 	public List<User> get(List<Long> ids) {
 		StringBuilder url = new StringBuilder(STEAM_API);
 		url.append(USER_INTERFACE);
-		url.append(KEY_PARAM);
 		url.append(API_KEY);
 		url.append(STEAM_IDS_PARAM);
 		url.append(ids.get(0));
@@ -42,7 +41,6 @@ public class UserRestRepository {
 	public List<Long> getFriendsIds(long userId) {
 		StringBuilder url = new StringBuilder(STEAM_API);
 		url.append(FRIENDS_INTERFACE);
-		url.append(KEY_PARAM);
 		url.append(API_KEY);
 		url.append(STEAM_ID_PARAM);
 		url.append(userId);

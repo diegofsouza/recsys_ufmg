@@ -32,7 +32,7 @@ public class UserService {
 	private GameRestRepository gameRestRepository;
 
 	public List<User> importUsers() {
-		long firstUser = 76561197960376471L;// last stop
+		long firstUser = 76561197960418046L;// last stop
 		long lastUser = DIEGO_TEST_USER_ID;
 		List<Long> idsTofind = new ArrayList<>(STEAM_API_USERS_LIMIT);
 		for (long currentUserId = firstUser; currentUserId < lastUser; currentUserId++) {

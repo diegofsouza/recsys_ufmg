@@ -7,12 +7,9 @@ import lombok.Data;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
-import com.google.gson.annotations.SerializedName;
-
 @Data
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_EMPTY)
 public class Game {
-	@SerializedName("appid")
 	private Integer id;
 	private String name;
 	private List<String> tags;

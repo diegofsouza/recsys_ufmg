@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +18,6 @@ import br.ufmg.repository.UserRepository;
 
 @Service
 public class GameService {
-	private static final Logger log = Logger.getLogger(GameService.class);
 	@Autowired
 	private GameRepository gameRepository;
 	@Autowired
@@ -33,7 +31,7 @@ public class GameService {
 		List<Game> games = gameRestRepository.importGames();
 		gameRepository.create(games);
 
-		return games;
+		return gameRepository.list();
 	}
 
 	public List<GameRanking> ranking() {
