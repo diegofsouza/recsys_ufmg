@@ -32,7 +32,7 @@ public class UserService {
 	private GameRestRepository gameRestRepository;
 
 	public List<User> importUsers() {
-		long firstUser = 76561197960418046L;// last stop
+		long firstUser = 76561197960528845L;// last stop
 		long lastUser = DIEGO_TEST_USER_ID;
 		List<Long> idsTofind = new ArrayList<>(STEAM_API_USERS_LIMIT);
 		for (long currentUserId = firstUser; currentUserId < lastUser; currentUserId++) {
@@ -54,6 +54,7 @@ public class UserService {
 		List<User> users = userRestRepository.get(idsTofind);
 		if (!CollectionUtils.isEmpty(users)) {
 			for (User user : users) {
+				log.info("parsing user:" + user.toString());
 				List<TastePreference> tastePreferences = gameRestRepository.findByUser(user.getId());
 				if (CollectionUtils.isEmpty(tastePreferences)) {
 					log.info("ignoring user without games:" + user.toString());
@@ -63,7 +64,7 @@ public class UserService {
 				user.setFriendIds(userRestRepository.getFriendsIds(user.getId()));
 
 				userRepository.create(user);
-				log.info("User saved:" + user.toString());
+				log.info("User saved!");
 			}
 		}
 	}
