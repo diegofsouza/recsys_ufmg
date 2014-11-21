@@ -37,7 +37,7 @@ public class JsonUserResultDeserializer extends JsonDeserializer<UserResult> {
 
 				JsonNode nicknameJson = userJson.get("personaname");
 				if (nicknameJson != null) {
-					user.setNickname(nicknameJson.getTextValue());
+					user.setNickname(nicknameJson.getTextValue().replaceAll("[^a-zA-Z0-9 -_]", ""));
 				}
 
 				JsonNode locationJson = userJson.get("loccountrycode");
