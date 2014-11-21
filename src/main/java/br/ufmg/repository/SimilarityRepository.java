@@ -26,7 +26,7 @@ public class SimilarityRepository extends BaseRepository {
 	@Autowired
 	private SimilarityRowMapper similarityRowMapper;
 
-	public List<TasteItemSimilarity> index() {
+	public List<TasteItemSimilarity> index(SimilarityType type) {
 		DataSource dataSource = this.jdbcTemplate.getDataSource();
 		DataModel dataModel = new MySQLBooleanPrefJDBCDataModel(dataSource);
 		ItemSimilarity itemSimilarity = new LogLikelihoodSimilarity(dataModel);
@@ -36,9 +36,9 @@ public class SimilarityRepository extends BaseRepository {
 		try {
 			sourceItemIterator = dataModel.getItemIDs();
 			targetItemIterator = dataModel.getItemIDs();
+			this.clear(type);
 			while (sourceItemIterator.hasNext()) {
 				Long sourceItemId = sourceItemIterator.next();
-
 				while (targetItemIterator.hasNext()) {
 					Long targetItemId = targetItemIterator.next();
 					if (sourceItemId.equals(targetItemId)) {
@@ -49,7 +49,7 @@ public class SimilarityRepository extends BaseRepository {
 					tasteItemSimilarity.setSourceItemId(sourceItemId);
 					tasteItemSimilarity.setTargetItemId(targetItemId);
 					tasteItemSimilarity.setSimilarity(itemSimilarityValue);
-					tasteItemSimilarity.setType(SimilarityType.ITEM_BASED);
+					tasteItemSimilarity.setType(type);
 
 					this.save(tasteItemSimilarity);
 				}
@@ -116,6 +116,10 @@ public class SimilarityRepository extends BaseRepository {
 
 		this.jdbcTemplate.update(query.toString(), similarity.getSimilarity(), similarity.getType().getId(), similarity.getSourceItemId(),
 				similarity.getTargetItemId(), similarity.getTargetItemId(), similarity.getSourceItemId());
+	}
+
+	public void clear(SimilarityType type) {
+		this.jdbcTemplate.update("delete from taste_item_similarity where s.type_id = ?", type.getId());
 	}
 
 }

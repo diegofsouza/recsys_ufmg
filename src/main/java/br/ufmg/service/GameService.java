@@ -37,6 +37,7 @@ public class GameService {
 	public List<GameRanking> ranking() {
 		List<Game> games = gameRepository.list();
 		List<User> users = userRepository.list();
+		gameRankingRepository.clear();
 		for (final Game game : games) {
 			GameRanking gameRanking = new GameRanking();
 			gameRanking.setId(game.getId());

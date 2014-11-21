@@ -30,4 +30,8 @@ public class GameRankingRepository extends BaseRepository {
 
 		return gameRanking;
 	}
+
+	public void clear() {
+		this.jdbcTemplate.execute("delete from game_ranking");
+	}
 }
