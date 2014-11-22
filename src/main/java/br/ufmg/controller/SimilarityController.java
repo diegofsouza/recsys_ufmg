@@ -22,8 +22,9 @@ public class SimilarityController {
 
 	@ResponseBody
 	@RequestMapping(value = "/build/{type}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<TasteItemSimilarity> index(@PathVariable SimilarityType type) {
-		return this.similarityService.index(type);
+	public List<TasteItemSimilarity> index(@PathVariable String type) {
+		SimilarityType typeEnum = SimilarityType.valueOf(type.toUpperCase());
+		return this.similarityService.index(typeEnum);
 	}
 
 	@ResponseBody

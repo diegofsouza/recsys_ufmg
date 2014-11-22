@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 
+import br.ufmg.domain.Game;
 import br.ufmg.domain.SimilarityType;
 import br.ufmg.domain.TasteItemSimilarity;
 import br.ufmg.repository.rowmapper.SimilarityRowMapper;
@@ -25,6 +26,8 @@ public class SimilarityRepository extends BaseRepository {
 	private static final Logger log = Logger.getLogger(SimilarityRepository.class);
 	@Autowired
 	private SimilarityRowMapper similarityRowMapper;
+	@Autowired
+	private GameRepository gameRepository;
 
 	public List<TasteItemSimilarity> index(SimilarityType type) {
 		DataSource dataSource = this.jdbcTemplate.getDataSource();
@@ -32,26 +35,31 @@ public class SimilarityRepository extends BaseRepository {
 		ItemSimilarity itemSimilarity = new LogLikelihoodSimilarity(dataModel);
 
 		LongPrimitiveIterator sourceItemIterator = null;
-		LongPrimitiveIterator targetItemIterator = null;
+		List<Game> games = null;
 		try {
 			sourceItemIterator = dataModel.getItemIDs();
-			targetItemIterator = dataModel.getItemIDs();
+			games = gameRepository.list();
 			this.clear(type);
 			while (sourceItemIterator.hasNext()) {
 				Long sourceItemId = sourceItemIterator.next();
-				while (targetItemIterator.hasNext()) {
-					Long targetItemId = targetItemIterator.next();
+				for (Game game : games) {
+					Long targetItemId = game.getId().longValue();
 					if (sourceItemId.equals(targetItemId)) {
 						continue;
 					}
-					BigDecimal itemSimilarityValue = new BigDecimal(itemSimilarity.itemSimilarity(sourceItemId, targetItemId));
+					Double itemSimilarityCalc = itemSimilarity.itemSimilarity(sourceItemId, targetItemId);
+					if (itemSimilarityCalc == null || itemSimilarityCalc.isNaN()) {
+						itemSimilarityCalc = 0d;
+					}
+					BigDecimal itemSimilarityValue = new BigDecimal(itemSimilarityCalc);
 					TasteItemSimilarity tasteItemSimilarity = new TasteItemSimilarity();
 					tasteItemSimilarity.setSourceItemId(sourceItemId);
 					tasteItemSimilarity.setTargetItemId(targetItemId);
 					tasteItemSimilarity.setSimilarity(itemSimilarityValue);
 					tasteItemSimilarity.setType(type);
 
-					this.save(tasteItemSimilarity);
+					this.create(tasteItemSimilarity);
+					log.info("Similarity saved:" + tasteItemSimilarity.toString());
 				}
 			}
 		} catch (TasteException e) {
@@ -98,7 +106,7 @@ public class SimilarityRepository extends BaseRepository {
 	public void create(TasteItemSimilarity similarity) {
 		StringBuilder query = new StringBuilder();
 		query.append("insert into taste_item_similarity");
-		query.append(" (item_id_a, item_id_b, similarity)");
+		query.append(" (item_id_a, item_id_b, similarity, type_id)");
 		query.append(" values (?, ?, ?, ?)");
 
 		this.jdbcTemplate.update(query.toString(), similarity.getSourceItemId(), similarity.getTargetItemId(), similarity.getSimilarity(), similarity.getType()
@@ -119,7 +127,7 @@ public class SimilarityRepository extends BaseRepository {
 	}
 
 	public void clear(SimilarityType type) {
-		this.jdbcTemplate.update("delete from taste_item_similarity where s.type_id = ?", type.getId());
+		this.jdbcTemplate.update("delete from taste_item_similarity where type_id = ?", type.getId());
 	}
 
 }
