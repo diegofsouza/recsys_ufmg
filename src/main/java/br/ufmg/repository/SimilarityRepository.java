@@ -23,6 +23,7 @@ import br.ufmg.repository.rowmapper.SimilarityRowMapper;
 
 @Repository
 public class SimilarityRepository extends BaseRepository {
+	private static final double ITEM_SIMILARITY_THRESHOLD = 0.0;
 	private static final Logger log = Logger.getLogger(SimilarityRepository.class);
 	@Autowired
 	private SimilarityRowMapper similarityRowMapper;
@@ -51,15 +52,17 @@ public class SimilarityRepository extends BaseRepository {
 					if (itemSimilarityCalc == null || itemSimilarityCalc.isNaN()) {
 						itemSimilarityCalc = 0d;
 					}
-					BigDecimal itemSimilarityValue = new BigDecimal(itemSimilarityCalc);
-					TasteItemSimilarity tasteItemSimilarity = new TasteItemSimilarity();
-					tasteItemSimilarity.setSourceItemId(sourceItemId);
-					tasteItemSimilarity.setTargetItemId(targetItemId);
-					tasteItemSimilarity.setSimilarity(itemSimilarityValue);
-					tasteItemSimilarity.setType(type);
+					if (itemSimilarityCalc > ITEM_SIMILARITY_THRESHOLD) {
+						BigDecimal itemSimilarityValue = new BigDecimal(itemSimilarityCalc);
+						TasteItemSimilarity tasteItemSimilarity = new TasteItemSimilarity();
+						tasteItemSimilarity.setSourceItemId(sourceItemId);
+						tasteItemSimilarity.setTargetItemId(targetItemId);
+						tasteItemSimilarity.setSimilarity(itemSimilarityValue);
+						tasteItemSimilarity.setType(type);
 
-					this.create(tasteItemSimilarity);
-					log.info("Similarity saved:" + tasteItemSimilarity.toString());
+						this.create(tasteItemSimilarity);
+						log.info("Similarity saved:" + tasteItemSimilarity.toString());
+					}
 				}
 			}
 		} catch (TasteException e) {
